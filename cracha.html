@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Gerador de Crachá</title>
+
 <link rel="stylesheet" href="style.css">
 
 <!-- html2canvas -->
@@ -34,8 +35,28 @@
     <label>Nome</label>
     <input id="nome" placeholder="Nome completo">
 
+    <label>Fonte do Nome</label>
+    <select id="fonteNome">
+      <option value="Inter">Inter</option>
+      <option value="Arial">Arial</option>
+      <option value="Poppins">Poppins</option>
+      <option value="Montserrat">Montserrat</option>
+      <option value="Roboto">Roboto</option>
+      <option value="Times New Roman">Times New Roman</option>
+    </select>
+
     <label>Setor</label>
     <input id="setor" placeholder="Setor">
+
+    <label>Fonte do Setor</label>
+    <select id="fonteSetor">
+      <option value="Inter">Inter</option>
+      <option value="Arial">Arial</option>
+      <option value="Poppins">Poppins</option>
+      <option value="Montserrat">Montserrat</option>
+      <option value="Roboto">Roboto</option>
+      <option value="Times New Roman">Times New Roman</option>
+    </select>
 
     <label>Foto</label>
     <input type="file" id="foto" accept="image/*">
@@ -46,15 +67,14 @@
     <button onclick="gerarCracha()">Gerar Crachá</button>
     <button onclick="baixarPNG()">Baixar PNG</button>
     <button onclick="baixarPDF()">Baixar PDF</button>
-    <button onclick="resetarPosicoes()">Resetar posição textos</button>
-
+    <button onclick="resetarPosicoes()">Resetar Layout</button>
     <button onclick="logout()" class="logout">Sair</button>
   </div>
 
   <div class="preview">
     <div id="cracha">
       <img id="bg" alt="">
-      <img id="fotoPrev" alt="">
+      <img id="fotoPrev" class="draggable" alt="">
 
       <div id="nomePrev" class="draggable"></div>
       <div id="setorPrev" class="draggable"></div>
