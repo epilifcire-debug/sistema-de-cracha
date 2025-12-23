@@ -260,3 +260,4 @@ async function baixarPDF() {
   pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
   pdf.save("cracha.pdf");
 }
+
