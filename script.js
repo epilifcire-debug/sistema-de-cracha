@@ -14,14 +14,13 @@
 ===================================================== */
 function entrar() {
   const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
+  const loginEl = document.getElementById("login");
+  const senhaEl = document.getElementById("senha");
 
-  const loginInput = document.getElementById("login");
-  const senhaInput = document.getElementById("senha");
+  if (!loginEl || !senhaEl) return;
 
-  if (!loginInput || !senhaInput) return;
-
-  const u = loginInput.value.trim();
-  const s = senhaInput.value.trim();
+  const u = loginEl.value.trim();
+  const s = senhaEl.value.trim();
 
   if (!u || !s) return alert("Preencha login e senha");
   if (!usuarios[u]) return alert("Usuário não existe");
@@ -38,29 +37,21 @@ function entrar() {
 }
 
 /* =====================================================
-   PROTEÇÃO DE PÁGINAS (SAFE)
+   PROTEÇÃO DE PÁGINAS
 ===================================================== */
 (function protegerPaginas() {
   const path = location.pathname;
-  const ehLogin =
-    path.endsWith("/") ||
-    path.endsWith("/index.html");
-
+  const ehLogin = path.endsWith("/") || path.endsWith("/index.html");
   if (ehLogin) return;
 
-  const usuarioLogado =
-    JSON.parse(localStorage.getItem("usuarioLogado"));
-
+  const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
   if (!usuarioLogado || !usuarioLogado.perfil) {
     localStorage.removeItem("usuarioLogado");
     location.href = "index.html";
     return;
   }
 
-  if (
-    path.endsWith("/admin.html") &&
-    usuarioLogado.perfil !== "admin"
-  ) {
+  if (path.endsWith("/admin.html") && usuarioLogado.perfil !== "admin") {
     location.href = "cracha.html";
   }
 })();
@@ -79,18 +70,13 @@ function logout() {
 function criarFuncionario() {
   const loginEl = document.getElementById("novoLogin");
   const senhaEl = document.getElementById("novaSenha");
-  const lista = document.getElementById("lista");
-
-  if (!loginEl || !senhaEl || !lista) return;
+  if (!loginEl || !senhaEl) return;
 
   const login = loginEl.value.trim();
   const senha = senhaEl.value.trim();
-
   if (!login || !senha) return alert("Preencha tudo");
 
-  const usuarios =
-    JSON.parse(localStorage.getItem("usuarios")) || {};
-
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
   if (usuarios[login]) return alert("Usuário já existe");
 
   usuarios[login] = { senha, perfil: "funcionario" };
@@ -105,9 +91,7 @@ function listarFuncionarios() {
   const lista = document.getElementById("lista");
   if (!lista) return;
 
-  const usuarios =
-    JSON.parse(localStorage.getItem("usuarios")) || {};
-
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
   lista.innerHTML = "";
 
   Object.keys(usuarios).forEach(u => {
@@ -122,10 +106,7 @@ function listarFuncionarios() {
 
 function excluirFuncionario(u) {
   if (!confirm("Excluir funcionário?")) return;
-
-  const usuarios =
-    JSON.parse(localStorage.getItem("usuarios")) || {};
-
+  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
   delete usuarios[u];
   localStorage.setItem("usuarios", JSON.stringify(usuarios));
   listarFuncionarios();
@@ -143,7 +124,6 @@ const tamanhos = {
   "10x15":{w:10,h:15},
   "12x15":{w:12,h:15}
 };
-
 const cmParaPx = cm => cm * 118;
 
 function gerarIdUnico() {
@@ -153,38 +133,45 @@ function gerarIdUnico() {
 function gerarCracha() {
   const cracha = document.getElementById("cracha");
   const tipo = document.getElementById("tipo");
-  const nome = document.getElementById("nome");
-  const setor = document.getElementById("setor");
-  const nomePrev = document.getElementById("nomePrev");
-  const setorPrev = document.getElementById("setorPrev");
-  const fotoPrev = document.getElementById("fotoPrev");
-  const bg = document.getElementById("bg");
-  const idCracha = document.getElementById("idCracha");
-  const foto = document.getElementById("foto");
-  const fundo = document.getElementById("fundo");
-
   if (!cracha || !tipo) return;
 
-  cracha.style.width =
-    cmParaPx(tamanhos[tipo.value].w) + "px";
-  cracha.style.height =
-    cmParaPx(tamanhos[tipo.value].h) + "px";
+  cracha.style.width = cmParaPx(tamanhos[tipo.value].w) + "px";
+  cracha.style.height = cmParaPx(tamanhos[tipo.value].h) + "px";
 
-  if (nomePrev) nomePrev.innerText = nome.value;
-  if (setorPrev) setorPrev.innerText = setor.value;
-  if (idCracha) idCracha.innerText = gerarIdUnico();
+  document.getElementById("nomePrev").innerText =
+    document.getElementById("nome").value;
 
-  if (foto && foto.files[0]) {
+  document.getElementById("setorPrev").innerText =
+    document.getElementById("setor").value;
+
+  const id = gerarIdUnico();
+  document.getElementById("idCracha").innerText = id;
+
+  const foto = document.getElementById("foto").files[0];
+  if (foto) {
     const r = new FileReader();
-    r.onload = e => fotoPrev.src = e.target.result;
-    r.readAsDataURL(foto.files[0]);
+    r.onload = e => document.getElementById("fotoPrev").src = e.target.result;
+    r.readAsDataURL(foto);
   }
 
-  if (fundo && fundo.files[0]) {
+  const fundo = document.getElementById("fundo").files[0];
+  if (fundo) {
     const r = new FileReader();
-    r.onload = e => bg.src = e.target.result;
-    r.readAsDataURL(fundo.files[0]);
+    r.onload = e => document.getElementById("bg").src = e.target.result;
+    r.readAsDataURL(fundo);
   }
+
+  gerarQRCode(id);
+}
+
+function gerarQRCode(id) {
+  const qr = document.getElementById("qrcode");
+  qr.innerHTML = "";
+  new QRCode(qr, {
+    text: JSON.stringify({ id }),
+    width: 90,
+    height: 90
+  });
 }
 
 /* =====================================================
@@ -209,10 +196,10 @@ function tornarArrastavel(el, key) {
   document.addEventListener("mouseup", () => {
     if (!dragging) return;
     dragging = false;
-    localStorage.setItem(
-      key,
-      JSON.stringify({ left: el.style.left, top: el.style.top })
-    );
+    localStorage.setItem(key, JSON.stringify({
+      left: el.style.left,
+      top: el.style.top
+    }));
   });
 
   const salvo = localStorage.getItem(key);
@@ -224,6 +211,12 @@ function tornarArrastavel(el, key) {
   }
 }
 
+function resetarPosicoes() {
+  localStorage.removeItem("pos_nome");
+  localStorage.removeItem("pos_setor");
+  location.reload();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const nomePrev = document.getElementById("nomePrev");
   const setorPrev = document.getElementById("setorPrev");
@@ -231,3 +224,39 @@ document.addEventListener("DOMContentLoaded", () => {
   if (nomePrev) tornarArrastavel(nomePrev, "pos_nome");
   if (setorPrev) tornarArrastavel(setorPrev, "pos_setor");
 });
+
+/* =====================================================
+   EXPORTAÇÃO
+===================================================== */
+function baixarPNG() {
+  html2canvas(document.getElementById("cracha"), {
+    scale: 3,
+    ignoreElements: el => el.tagName === "IMG" && !el.src
+  }).then(canvas => {
+    const a = document.createElement("a");
+    a.download = "cracha.png";
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+  });
+}
+
+async function baixarPDF() {
+  const { jsPDF } = window.jspdf;
+  const tipo = document.getElementById("tipo").value;
+  const w = tamanhos[tipo].w;
+  const h = tamanhos[tipo].h;
+
+  const canvas = await html2canvas(document.getElementById("cracha"), {
+    scale: 3,
+    ignoreElements: el => el.tagName === "IMG" && !el.src
+  });
+
+  const pdf = new jsPDF({
+    orientation: h > w ? "portrait" : "landscape",
+    unit: "cm",
+    format: [w, h]
+  });
+
+  pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
+  pdf.save("cracha.pdf");
+}
