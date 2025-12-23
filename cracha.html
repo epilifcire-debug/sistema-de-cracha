@@ -5,10 +5,10 @@
 <title>Gerador de Crachá</title>
 <link rel="stylesheet" href="style.css">
 
-<!-- Captura do crachá -->
+<!-- html2canvas -->
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-<!-- PDF em tamanho real -->
+<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <!-- QR Code -->
@@ -45,20 +45,20 @@
 
     <button onclick="gerarCracha()">Gerar Crachá</button>
     <button onclick="baixarPNG()">Baixar PNG</button>
-    <button onclick="baixarPDF()">Baixar PDF</button>
+    <button onclick="baixarPDF()">Baixar PDF (Impressão)</button>
 
     <button onclick="logout()" class="logout">Sair</button>
   </div>
 
   <div class="preview">
     <div id="cracha">
-      <img id="bg">
-      <img id="fotoPrev">
+      <img id="bg" alt="">
+      <img id="fotoPrev" alt="">
       <div id="nomePrev"></div>
       <div id="setorPrev"></div>
 
-      <!-- QR CODE -->
       <div id="qrcode"></div>
+      <div id="idCracha"></div>
     </div>
   </div>
 
