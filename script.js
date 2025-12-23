@@ -1,5 +1,5 @@
 /* =====================================================
-   INIT SEGURO (CRIA ADMIN)
+   LOGIN / PROTEÇÃO (RESUMIDO)
 ===================================================== */
 (function init() {
   let usuarios = JSON.parse(localStorage.getItem("usuarios"));
@@ -9,98 +9,10 @@
   }
 })();
 
-/* =====================================================
-   LOGIN
-===================================================== */
-function entrar() {
-  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-  const u = document.getElementById("login")?.value?.trim();
-  const s = document.getElementById("senha")?.value?.trim();
-
-  if (!u || !s) return alert("Preencha login e senha");
-  if (!usuarios[u]) return alert("Usuário não existe");
-  if (usuarios[u].senha !== s) return alert("Senha incorreta");
-
-  localStorage.setItem(
-    "usuarioLogado",
-    JSON.stringify({ login: u, perfil: usuarios[u].perfil })
-  );
-
-  location.href = usuarios[u].perfil === "admin"
-    ? "admin.html"
-    : "cracha.html";
-}
-
-/* =====================================================
-   PROTEÇÃO (GITHUB PAGES SAFE)
-===================================================== */
-(function protegerPaginas() {
-  const path = location.pathname;
-  const ehLogin = path.endsWith("/") || path.endsWith("/index.html");
-  if (ehLogin) return;
-
-  const usuarioLogado = JSON.parse(localStorage.getItem("usuarioLogado"));
-  if (!usuarioLogado || !usuarioLogado.perfil) {
-    localStorage.removeItem("usuarioLogado");
-    location.href = "index.html";
-    return;
-  }
-
-  if (path.endsWith("/admin.html") && usuarioLogado.perfil !== "admin") {
-    location.href = "cracha.html";
-  }
-})();
-
-/* =====================================================
-   LOGOUT
-===================================================== */
 function logout() {
   localStorage.removeItem("usuarioLogado");
   location.href = "index.html";
 }
-
-/* =====================================================
-   ADMIN
-===================================================== */
-function criarFuncionario() {
-  const login = document.getElementById("novoLogin")?.value?.trim();
-  const senha = document.getElementById("novaSenha")?.value?.trim();
-  if (!login || !senha) return alert("Preencha tudo");
-
-  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-  if (usuarios[login]) return alert("Usuário já existe");
-
-  usuarios[login] = { senha, perfil: "funcionario" };
-  localStorage.setItem("usuarios", JSON.stringify(usuarios));
-  listarFuncionarios();
-}
-
-function listarFuncionarios() {
-  const lista = document.getElementById("lista");
-  if (!lista) return;
-
-  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-  lista.innerHTML = "";
-
-  Object.keys(usuarios).forEach(u => {
-    if (usuarios[u].perfil === "funcionario") {
-      lista.innerHTML += `
-        <li>${u}
-          <button onclick="excluirFuncionario('${u}')">❌</button>
-        </li>`;
-    }
-  });
-}
-
-function excluirFuncionario(u) {
-  if (!confirm("Excluir funcionário?")) return;
-  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || {};
-  delete usuarios[u];
-  localStorage.setItem("usuarios", JSON.stringify(usuarios));
-  listarFuncionarios();
-}
-
-document.addEventListener("DOMContentLoaded", listarFuncionarios);
 
 /* =====================================================
    CRACHÁ
@@ -116,88 +28,113 @@ const tamanhos = {
 const cmParaPx = cm => cm * 118;
 
 function gerarIdUnico() {
-  const d = new Date().toISOString().slice(0,10).replace(/-/g,"");
-  const r = Math.random().toString(36).substring(2,8).toUpperCase();
-  return `CR-${d}-${r}`;
+  return "CR-" + Date.now().toString(36).toUpperCase();
 }
 
 function gerarCracha() {
-  const t = document.getElementById("tipo").value;
-  const cracha = document.getElementById("cracha");
-
+  const t = tipo.value;
   cracha.style.width = cmParaPx(tamanhos[t].w) + "px";
   cracha.style.height = cmParaPx(tamanhos[t].h) + "px";
 
-  document.getElementById("nomePrev").innerText =
-    document.getElementById("nome").value;
+  nomePrev.innerText = nome.value;
+  setorPrev.innerText = setor.value;
+  idCracha.innerText = gerarIdUnico();
 
-  document.getElementById("setorPrev").innerText =
-    document.getElementById("setor").value;
-
-  const id = gerarIdUnico();
-  document.getElementById("idCracha").innerText = id;
-
-  const foto = document.getElementById("foto").files[0];
-  if (foto) {
+  if (foto.files[0]) {
     const r = new FileReader();
-    r.onload = e => document.getElementById("fotoPrev").src = e.target.result;
-    r.readAsDataURL(foto);
+    r.onload = e => fotoPrev.src = e.target.result;
+    r.readAsDataURL(foto.files[0]);
   }
 
-  const fundo = document.getElementById("fundo").files[0];
-  if (fundo) {
+  if (fundo.files[0]) {
     const r = new FileReader();
-    r.onload = e => document.getElementById("bg").src = e.target.result;
-    r.readAsDataURL(fundo);
+    r.onload = e => bg.src = e.target.result;
+    r.readAsDataURL(fundo.files[0]);
   }
 
-  gerarQRCode(id);
+  gerarQRCode(idCracha.innerText);
 }
 
 function gerarQRCode(id) {
-  const qr = document.getElementById("qrcode");
-  qr.innerHTML = "";
-
-  new QRCode(qr, {
-    text: JSON.stringify({
-      id,
-      nome: document.getElementById("nome").value,
-      setor: document.getElementById("setor").value,
-      usuario: JSON.parse(localStorage.getItem("usuarioLogado")).login,
-      criadoEm: new Date().toISOString()
-    }),
+  qrcode.innerHTML = "";
+  new QRCode(qrcode, {
+    text: JSON.stringify({ id, nome: nome.value, setor: setor.value }),
     width: 90,
     height: 90
   });
 }
 
 /* =====================================================
-   EXPORTAÇÃO (SEM ERRO DE IMAGEM)
+   DRAG & DROP
+===================================================== */
+function tornarArrastavel(el, key) {
+  let offsetX = 0, offsetY = 0, dragging = false;
+
+  el.addEventListener("mousedown", e => {
+    dragging = true;
+    offsetX = e.clientX - el.offsetLeft;
+    offsetY = e.clientY - el.offsetTop;
+  });
+
+  document.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    el.style.left = e.clientX - offsetX + "px";
+    el.style.top = e.clientY - offsetY + "px";
+    el.style.transform = "none";
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (!dragging) return;
+    dragging = false;
+    localStorage.setItem(key, JSON.stringify({
+      left: el.style.left,
+      top: el.style.top
+    }));
+  });
+
+  const salvo = localStorage.getItem(key);
+  if (salvo) {
+    const pos = JSON.parse(salvo);
+    el.style.left = pos.left;
+    el.style.top = pos.top;
+    el.style.transform = "none";
+  }
+}
+
+function resetarPosicoes() {
+  localStorage.removeItem("pos_nome");
+  localStorage.removeItem("pos_setor");
+  location.reload();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  tornarArrastavel(nomePrev, "pos_nome");
+  tornarArrastavel(setorPrev, "pos_setor");
+});
+
+/* =====================================================
+   EXPORTAÇÃO
 ===================================================== */
 function baixarPNG() {
-  html2canvas(document.getElementById("cracha"), {
+  html2canvas(cracha, {
     scale: 3,
-    useCORS: true,
-    allowTaint: true,
     ignoreElements: el => el.tagName === "IMG" && !el.src
-  }).then(canvas => {
+  }).then(c => {
     const a = document.createElement("a");
     a.download = "cracha.png";
-    a.href = canvas.toDataURL("image/png");
+    a.href = c.toDataURL();
     a.click();
   });
 }
 
 async function baixarPDF() {
   const { jsPDF } = window.jspdf;
-  const t = document.getElementById("tipo").value;
+  const t = tipo.value;
   const w = tamanhos[t].w;
   const h = tamanhos[t].h;
 
-  const canvas = await html2canvas(document.getElementById("cracha"), {
+  const canvas = await html2canvas(cracha, {
     scale: 3,
-    useCORS: true,
-    allowTaint: true,
     ignoreElements: el => el.tagName === "IMG" && !el.src
   });
 
@@ -207,6 +144,6 @@ async function baixarPDF() {
     format: [w, h]
   });
 
-  pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, w, h);
-  pdf.save("cracha-impressao.pdf");
+  pdf.addImage(canvas.toDataURL(), "PNG", 0, 0, w, h);
+  pdf.save("cracha.pdf");
 }
