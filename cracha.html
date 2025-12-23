@@ -45,7 +45,8 @@
 
     <button onclick="gerarCracha()">Gerar Crachá</button>
     <button onclick="baixarPNG()">Baixar PNG</button>
-    <button onclick="baixarPDF()">Baixar PDF (Impressão)</button>
+    <button onclick="baixarPDF()">Baixar PDF</button>
+    <button onclick="resetarPosicoes()">Resetar posição textos</button>
 
     <button onclick="logout()" class="logout">Sair</button>
   </div>
@@ -54,8 +55,9 @@
     <div id="cracha">
       <img id="bg" alt="">
       <img id="fotoPrev" alt="">
-      <div id="nomePrev"></div>
-      <div id="setorPrev"></div>
+
+      <div id="nomePrev" class="draggable"></div>
+      <div id="setorPrev" class="draggable"></div>
 
       <div id="qrcode"></div>
       <div id="idCracha"></div>
